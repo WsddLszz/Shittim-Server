@@ -33,72 +33,72 @@ const DEFAULT_SERVER_CONFIG = {
 
 const GROUPS = [
   {
-    title: 'Networking', icon: 'server',
+    title: '网络', icon: 'server',
     fields: [
-      { key: 'HostPort', label: 'API port', type: 'text', hint: 'default 5000' },
-      { key: 'GatewayPort', label: 'Gateway port', type: 'text', hint: 'default 5100' },
-      { key: 'EnableGateway', label: 'Enable gateway', type: 'bool' },
+      { key: 'HostPort', label: 'API 端口', type: 'text', hint: '默认 5000' },
+      { key: 'GatewayPort', label: '网关端口', type: 'text', hint: '默认 5100' },
+      { key: 'EnableGateway', label: '启用网关', type: 'bool' },
     ],
   },
   {
-    title: 'Behaviour', icon: 'bolt',
+    title: '行为', icon: 'bolt',
     fields: [
-      { key: 'UseEncryption', label: 'Packet encryption', type: 'bool' },
-      { key: 'BypassAuthentication', label: 'Bypass authentication', type: 'bool' },
-      { key: 'UseCustomExcel', label: 'Custom Excel tables', type: 'bool' },
-      { key: 'KoyukiIncident', label: 'Koyuki incident', type: 'bool', desc: 'nihahaha' },
-      { key: 'AutoCheckVersion', label: 'Auto-check version', type: 'bool', desc: 'Resolve latest data version on boot' },
-      { key: 'AutoUpdateVersion', label: 'Auto-update version', type: 'bool' },
-      { key: 'AutoUpdateResources', label: 'Auto-update resources', type: 'bool', desc: 'Re-download game data (Excel, HexaMap) when the version changes' },
+      { key: 'UseEncryption', label: '数据包加密', type: 'bool' },
+      { key: 'BypassAuthentication', label: '绕过身份验证', type: 'bool' },
+      { key: 'UseCustomExcel', label: '自定义 Excel 表', type: 'bool' },
+      { key: 'KoyukiIncident', label: '小雪事件', type: 'bool', desc: 'nihahaha' },
+      { key: 'AutoCheckVersion', label: '自动检查版本', type: 'bool', desc: '启动时解析最新数据版本' },
+      { key: 'AutoUpdateVersion', label: '自动更新版本', type: 'bool' },
+      { key: 'AutoUpdateResources', label: '自动更新资源', type: 'bool', desc: '版本变化时重新下载游戏数据（Excel、HexaMap）' },
     ],
   },
   {
-    title: 'Database', icon: 'inventory',
+    title: '数据库', icon: 'inventory',
     fields: [
-      { key: 'SQLProvider', label: 'SQL provider', type: 'text' },
-      { key: 'SQLConnectionString', label: 'Connection string', type: 'text' },
+      { key: 'SQLProvider', label: 'SQL 提供程序', type: 'text' },
+      { key: 'SQLConnectionString', label: '连接字符串', type: 'text' },
     ],
   },
   {
-    title: 'Version & data sources', icon: 'clock',
+    title: '版本与数据源', icon: 'clock',
     fields: [
-      { key: 'OverrideVersionId', label: 'Override version id', type: 'text', hint: 'blank = auto' },
-      { key: 'OverrideCdnBaseUrl', label: 'Override CDN base URL', type: 'text', hint: 'blank = auto' },
-      { key: 'ServerInfoUrl', label: 'Server info URL', type: 'text' },
+      { key: 'OverrideVersionId', label: '覆盖版本 ID', type: 'text', hint: '留空则自动' },
+      { key: 'OverrideCdnBaseUrl', label: '覆盖 CDN 基础 URL', type: 'text', hint: '留空则自动' },
+      { key: 'ServerInfoUrl', label: '服务器信息 URL', type: 'text' },
     ],
   },
   {
-    title: 'Client auto-patching', icon: 'shield',
+    title: '客户端自动补丁', icon: 'shield',
     fields: [
-      { key: 'ClientInstallDirectory', label: 'Game install directory', type: 'dir', hint: 'blank = look for the Steam install; the per-patch overrides below are only needed when one file lives somewhere else' },
-      { key: 'AutoPatchClientMetadata', label: 'Patch metadata', type: 'bool', path: 'ClientMetadataPath' },
-      { key: 'AutoPatchClientGamescaleIas', label: 'Patch gamescale.core IAS', type: 'bool', path: 'ClientGamescaleCorePath' },
-      { key: 'AutoPatchClientInfaceConfig', label: 'Patch inface config', type: 'bool', path: 'ClientInfaceConfigPath' },
-      { key: 'AutoManageGrap64', label: 'Manage grap64', type: 'bool', path: 'ClientGrap64Path' },
-      { key: 'AutoPatchClientBanners', label: 'Patch recruitment banners', type: 'bool', path: 'ClientExcelDbPath' },
-      { key: 'RegionDisplayText', label: 'Region label', type: 'text', hint: 'shown on the title screen, blank = stock region name' },
+      { key: 'ClientInstallDirectory', label: '游戏安装目录', type: 'dir', hint: '留空时自动查找 Steam 安装目录；仅当某个文件位于其他位置时才需要填写下方单项路径' },
+      { key: 'AutoPatchClientMetadata', label: '修补元数据', type: 'bool', path: 'ClientMetadataPath' },
+      { key: 'AutoPatchClientGamescaleIas', label: '修补 gamescale.core IAS', type: 'bool', path: 'ClientGamescaleCorePath' },
+      { key: 'AutoPatchClientInfaceConfig', label: '修补 inface 配置', type: 'bool', path: 'ClientInfaceConfigPath' },
+      { key: 'AutoManageGrap64', label: '管理 grap64', type: 'bool', path: 'ClientGrap64Path' },
+      { key: 'AutoPatchClientBanners', label: '修补招募卡池', type: 'bool', path: 'ClientExcelDbPath' },
+      { key: 'RegionDisplayText', label: '地区标签', type: 'text', hint: '显示在标题画面；留空则使用原始地区名称' },
     ],
   },
   {
-    title: 'Packet logging', icon: 'edit', sub: 'PacketLogging',
+    title: '数据包日志', icon: 'edit', sub: 'PacketLogging',
     fields: [
-      { key: 'RequestPacket', label: 'Log requests', type: 'bool' },
-      { key: 'ResponsePacket', label: 'Log responses', type: 'bool' },
-      { key: 'ErrorPacket', label: 'Log errors', type: 'bool' },
+      { key: 'RequestPacket', label: '记录请求', type: 'bool' },
+      { key: 'ResponsePacket', label: '记录响应', type: 'bool' },
+      { key: 'ErrorPacket', label: '记录错误', type: 'bool' },
     ],
   },
 ];
 
 export default {
   id: 'config',
-  title: 'Configuration',  icon: 'config',
+  title: '配置',  icon: 'config',
   needsTarget: false,
 
   async mount(root, { rerender }) {
     const cfg = await window.host.configRead();
     if (!cfg.ok) {
-      root.appendChild(frag(`<div class="empty"><b>No configuration found</b><span><span class="mono" data-selectable style="word-break:break-all">${cfg.path}</span><br>It is generated the first time the server runs.</span></div>`));
-      const b = button('Open containing folder', { variant: 'ghost', iconName: 'folder', onClick: async () => {
+      root.appendChild(frag(`<div class="empty"><b>未找到配置文件</b><span><span class="mono" data-selectable style="word-break:break-all">${cfg.path}</span><br>服务器首次运行时会自动生成。</span></div>`));
+      const b = button('打开所在文件夹', { variant: 'ghost', iconName: 'folder', onClick: async () => {
         const p = await window.host.paths(); window.host.openPath(p.exeBaseDir);
       }});
       root.appendChild(el('div', { style: { textAlign: 'center', marginTop: '14px' } }, b));
@@ -110,14 +110,14 @@ export default {
     const pl = sc.PacketLogging = sc.PacketLogging || {};
 
     const restartHint = store.get().online
-      ? frag('<span class="pill warn"><span class="dot"></span>Restart server to apply</span>')
-      : frag('<span class="pill"><span class="dot"></span>Server offline</span>');
+      ? frag('<span class="pill warn"><span class="dot"></span>重启服务器后生效</span>')
+      : frag('<span class="pill"><span class="dot"></span>服务器离线</span>');
 
-    const saveBtn = button('Save configuration', { variant: 'primary', iconName: 'save', onClick: save });
-    const reloadBtn = button('Reload', { variant: 'ghost', iconName: 'refresh', onClick: rerender });
-    const rawBtn = button('Edit raw JSON', { variant: 'ghost', iconName: 'edit', onClick: editRaw });
-    const openBtn = button('Open file', { variant: 'ghost', iconName: 'external', onClick: () => window.host.openPath(cfg.path) });
-    const resetBtn = button('Reset to defaults', { variant: 'ghost', iconName: 'refresh', onClick: resetDefaults });
+    const saveBtn = button('保存配置', { variant: 'primary', iconName: 'save', onClick: save });
+    const reloadBtn = button('重新加载', { variant: 'ghost', iconName: 'refresh', onClick: rerender });
+    const rawBtn = button('编辑原始 JSON', { variant: 'ghost', iconName: 'edit', onClick: editRaw });
+    const openBtn = button('打开文件', { variant: 'ghost', iconName: 'external', onClick: () => window.host.openPath(cfg.path) });
+    const resetBtn = button('恢复默认值', { variant: 'ghost', iconName: 'refresh', onClick: resetDefaults });
 
     const bar = el('div.card', { style: { marginBottom: '18px' } },
       el('div.card-body', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
@@ -149,11 +149,11 @@ export default {
     root.appendChild(grid);
 
     const advBody = el('div', {});
-    advBody.appendChild(field('Excel DB SQLCipher key', bindInput(sc, 'ExcelDbSqlCipherKey')));
-    advBody.appendChild(field('Excel DB SQLCipher license', bindInput(sc, 'ExcelDbSqlCipherLicense')));
+    advBody.appendChild(field('Excel DB SQLCipher 密钥', bindInput(sc, 'ExcelDbSqlCipherKey')));
+    advBody.appendChild(field('Excel DB SQLCipher 许可证', bindInput(sc, 'ExcelDbSqlCipherLicense')));
     root.appendChild(el('div.card', { style: { marginTop: '18px' } },
-      el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: 'Advanced - Excel decryption' }),
-        el('span.sub', { text: 'change only if your data dump differs' })),
+      el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: '高级 · Excel 解密' }),
+        el('span.sub', { text: '仅在数据转储不同时修改' })),
       el('div.card-body', {}, advBody)));
 
     function bindInput(obj, key) {
@@ -183,7 +183,7 @@ export default {
     function buildPathField(obj, f) {
       const wrap = el('div', { style: { margin: '-4px 0 8px', paddingLeft: '2px', minWidth: '0' } });
       const row = el('div.input-row', { style: { minWidth: '0' } });
-      const i = input({ value: obj[f.path] ?? '', placeholder: 'path (optional override)' });
+      const i = input({ value: obj[f.path] ?? '', placeholder: '路径（可选覆盖）' });
       i.addEventListener('input', () => { obj[f.path] = i.value; });
       const browse = button('...', { variant: 'ghost', onClick: async () => {
         const picked = await window.host.pickFile();
@@ -197,31 +197,31 @@ export default {
 
     async function save() {
       const r = await window.host.configWrite(data);
-      toast(r.ok ? 'Configuration saved' : (r.error || 'Save failed'), r.ok ? 'good' : 'bad');
+      toast(r.ok ? '配置已保存' : (r.error || '保存失败'), r.ok ? 'good' : 'bad');
     }
     async function resetDefaults() {
-      const ok = await confirmDialog({ title: 'Reset to defaults', confirmLabel: 'Reset & save',
-        message: 'Restore every setting on this page to its default value and save it to Config.json? GameVersion, gateway keys and the database are left untouched.' });
+      const ok = await confirmDialog({ title: '恢复默认值', confirmLabel: '重置并保存',
+        message: '将此页全部设置恢复默认值并保存到 Config.json？GameVersion、网关密钥和数据库不会更改。' });
       if (!ok) return;
       Object.assign(sc, DEFAULT_SERVER_CONFIG, { PacketLogging: { ...DEFAULT_SERVER_CONFIG.PacketLogging } });
       const r = await window.host.configWrite(data);
-      if (r.ok) { toast('Configuration reset to defaults', 'good'); rerender(); }
-      else toast(r.error || 'Reset failed', 'bad');
+      if (r.ok) { toast('配置已恢复默认值', 'good'); rerender(); }
+      else toast(r.error || '重置失败', 'bad');
     }
 
     function editRaw() {
       const ta = textarea({ value: JSON.stringify(data, null, 2), style: { minHeight: '52vh', maxWidth: '100%', fontFamily: 'var(--font-mono)', fontSize: '12.5px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' } });
-      const apply = button('Apply', { variant: 'primary', iconName: 'check' });
-      const cancel = button('Cancel', { variant: 'ghost' });
-      const ref = modal({ title: 'Raw configuration', wide: true, body: ta, footer: [cancel, apply] });
+      const apply = button('应用', { variant: 'primary', iconName: 'check' });
+      const cancel = button('取消', { variant: 'ghost' });
+      const ref = modal({ title: '原始配置', wide: true, body: ta, footer: [cancel, apply] });
       cancel.addEventListener('click', ref.close);
       apply.addEventListener('click', async () => {
         try {
           const parsed = JSON.parse(ta.value);
           const r = await window.host.configWrite(parsed);
-          if (r.ok) { ref.close(); toast('Configuration saved', 'good'); rerender(); }
+          if (r.ok) { ref.close(); toast('配置已保存', 'good'); rerender(); }
           else toast(r.error, 'bad');
-        } catch (e) { toast('Invalid JSON: ' + e.message, 'bad'); }
+        } catch (e) { toast('JSON 无效：' + e.message, 'bad'); }
       });
     }
   },

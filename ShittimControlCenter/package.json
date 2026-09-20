@@ -7,7 +7,7 @@
   "author": "Shittim",
   "license": "MIT",
   "scripts": {
-    "test": "node --test test/updater.test.js test/paths.test.js test/console.test.js test/health.test.js test/procs.test.js test/certs.test.js test/setup.test.js",
+    "test": "node --test test/updater.test.js test/paths.test.js test/console.test.js test/health.test.js test/procs.test.js test/certs.test.js test/setup.test.js test/localization.test.js",
     "soak": "electron test/soak.js --no-sandbox",
     "start": "electron .",
     "dev": "electron . --dev",

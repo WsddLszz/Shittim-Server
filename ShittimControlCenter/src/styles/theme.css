@@ -30,8 +30,8 @@
 
   --led-idle:    #52678a;
 
-  --font-round: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
-  --font-body:  'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --font-round: 'Segoe UI Variable Display', 'Microsoft YaHei UI', 'PingFang SC', 'Segoe UI', system-ui, sans-serif;
+  --font-body:  'Segoe UI Variable Text', 'Microsoft YaHei UI', 'PingFang SC', 'Segoe UI', system-ui, sans-serif;
   --font-mono:  'Cascadia Mono', 'Consolas', monospace;
 
   --r-sm: 4px;

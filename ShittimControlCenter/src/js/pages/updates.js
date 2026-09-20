@@ -4,7 +4,7 @@ import { icon } from '../icons.js';
 // Git-free updater. "Check" compares the locally recorded commit (a download marker, or - for a real git checkout - HEAD) against origin/<branch> through the GitHub API and lists the incoming changelog.
 export default {
   id: 'updates',
-  title: 'Updates',  icon: 'download',
+  title: '更新',  icon: 'download',
   needsTarget: false,
 
   mount(root) {
@@ -14,20 +14,20 @@ export default {
     const headInfo = el('div', { style: { minWidth: '0' } });
     const resultBody = el('div', { style: { minWidth: '0', marginTop: '14px' } });
 
-    const checkBtn = button('Check for updates', { variant: 'primary', sm: true, iconName: 'refresh', onClick: doCheck });
+    const checkBtn = button('检查更新', { variant: 'primary', sm: true, iconName: 'refresh', onClick: doCheck });
 
     const versionCard = el('div.card', {},
-      el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: 'Version' }),
+      el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: '版本' }),
         el('span.sub', { text: 'Neoexm/Shittim-Server - main' }), el('div.spacer', {}), checkBtn),
       el('div.card-body', {}, headInfo, resultBody));
 
-    const rebuildBtn = button('Rebuild server', { variant: 'ghost', iconName: 'bolt', onClick: doRebuild });
-    const selfBtn = button('Check for app update', { variant: 'ghost', iconName: 'refresh', onClick: doSelfCheck });
+    const rebuildBtn = button('重新构建服务器', { variant: 'ghost', iconName: 'bolt', onClick: doRebuild });
+    const selfBtn = button('检查控制中心更新', { variant: 'ghost', iconName: 'refresh', onClick: doSelfCheck });
     const maintCard = el('div.card', { style: { marginTop: '18px' } },
-      el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: 'Maintenance' })),
+      el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: '维护' })),
       el('div.card-body', {},
         el('p', {
-          html: 'Installing an update rebuilds the server for you, so this button is only for rebuilding by hand - after editing the source yourself, or when a build failed. A running server is stopped for the build and started again afterwards, and the output streams to the console. The Control Center app updates itself separately from GitHub Releases: it checks on launch and prompts you.',
+          html: '安装更新时会自动重新构建服务器，因此只有在手动修改源码或构建失败时才需要使用此按钮。构建时会停止正在运行的服务器，完成后再启动，输出会实时显示在控制台。控制中心应用通过 GitHub Releases 独立更新：启动时会自动检查并提示。',
           style: { fontSize: '13px', color: 'var(--ink-2)', margin: '0 0 14px', lineHeight: '1.6' },
         }),
         el('div.row.wrap', { style: { gap: '10px' } }, rebuildBtn, selfBtn)));
@@ -37,12 +37,12 @@ export default {
 
     paintHead(null);
     clear(resultBody);
-    resultBody.appendChild(spinnerRow('Checking origin/main...'));
+    resultBody.appendChild(spinnerRow('正在检查 origin/main…'));
     doCheck();
 
     function sourceTag(info) {
       if (!info || !info.localSource) return null;
-      const label = info.localSource === 'git' ? 'git checkout' : 'downloaded';
+      const label = info.localSource === 'git' ? 'Git 检出' : '下载版';
       return el('span.tag.grey', { text: label });
     }
 
@@ -50,14 +50,14 @@ export default {
       clear(headInfo);
       const row = el('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', minWidth: '0' } });
       if (!info || !info.ok) {
-        row.appendChild(el('span', { text: 'Current project', style: { fontSize: '13px', color: 'var(--ink-2)' } }));
+        row.appendChild(el('span', { text: '当前项目', style: { fontSize: '13px', color: 'var(--ink-2)' } }));
       } else if (info.versionKnown === false) {
-        row.appendChild(el('span', { text: 'Installed copy', style: { fontSize: '12.5px', color: 'var(--ink-3)' } }));
+        row.appendChild(el('span', { text: '已安装副本', style: { fontSize: '12.5px', color: 'var(--ink-3)' } }));
         if (info.branch) row.appendChild(el('span.tag', { text: info.branch }));
-        row.appendChild(el('span.tag.gold', { text: 'version unknown' }));
+        row.appendChild(el('span.tag.gold', { text: '版本未知' }));
         const st = sourceTag(info); if (st) row.appendChild(st);
       } else {
-        row.appendChild(el('span', { text: 'On branch', style: { fontSize: '12.5px', color: 'var(--ink-3)' } }));
+        row.appendChild(el('span', { text: '所在分支', style: { fontSize: '12.5px', color: 'var(--ink-3)' } }));
         row.appendChild(el('span.tag', { text: info.branch || 'main' }));
         if (info.head) row.appendChild(el('span.mono', { text: info.head, 'data-selectable': true, style: { fontSize: '12.5px', color: 'var(--blue-ink)' } }));
         const st = sourceTag(info); if (st) row.appendChild(st);
@@ -90,8 +90,8 @@ export default {
 
     function updateNote(r) {
       const text = r.localSource === 'git'
-        ? 'Installed via git - the update is a fast-forward pull and will never overwrite local edits.'
-        : 'Updating re-downloads the latest source from GitHub. Your <b>Config</b>, database and build output are left untouched, but any edits to source files will be replaced.';
+        ? '通过 Git 安装：更新仅执行快进拉取，不会覆盖本地修改。'
+        : '更新会从 GitHub 重新下载最新源码。<b>Config</b>、数据库和构建输出不会更改，但源码文件中的本地修改会被替换。';
       return el('p', {
         html: text,
         style: { fontSize: '12px', color: 'var(--ink-3)', margin: '12px 0 0', lineHeight: '1.6' },
@@ -101,7 +101,7 @@ export default {
     function renderResult(r) {
       clear(resultBody);
       if (!r || !r.ok) {
-        resultBody.appendChild(statusRow('bad', 'Check failed', (r && r.error) || 'Unknown error'));
+        resultBody.appendChild(statusRow('bad', '检查失败', (r && r.error) || '未知错误'));
         return;
       }
       paintHead(r);
@@ -109,26 +109,26 @@ export default {
       // Can't quantify the gap (no marker, or a commit GitHub can't diff). Offer a clean re-download of the latest source.
       if (r.versionKnown === false || r.compareFailed) {
         const why = r.versionKnown === false
-          ? 'This copy has no version marker, so its exact commit is unknown.'
-          : 'This copy sits on a commit GitHub cannot diff against the branch (a local build or diverged history).';
-        resultBody.appendChild(statusRow('warn', 'Cannot compare versions',
+          ? '此副本没有版本标记，无法确定准确提交。'
+          : '此副本所在提交无法与 GitHub 分支比较（可能是本地构建或历史已分叉）。';
+        resultBody.appendChild(statusRow('warn', '无法比较版本',
           `${why} Latest on origin/${r.branch} is ${r.remoteShort}${r.remoteWhen ? ` - ${r.remoteWhen}` : ''}.`));
         if (r.remoteSubject) resultBody.appendChild(remoteLine(r));
         resultBody.appendChild(updateNote(r));
-        const btn = button('Download latest', { variant: 'primary', iconName: 'download', onClick: () => doInstall(r) });
+        const btn = button('下载最新版', { variant: 'primary', iconName: 'download', onClick: () => doInstall(r) });
         resultBody.appendChild(el('div', { style: { marginTop: '16px' } }, btn));
         return;
       }
 
       if ((r.behind || 0) <= 0) {
-        resultBody.appendChild(statusRow('good', 'Up to date',
+        resultBody.appendChild(statusRow('good', '已是最新版本',
           r.ahead > 0
-            ? `You are ${r.ahead} local commit${r.ahead === 1 ? '' : 's'} ahead of origin/${r.branch}.`
+            ? `本地比 origin/${r.branch} 超前 ${r.ahead} 个提交。`
             : ''));
         return;
       }
 
-      resultBody.appendChild(statusRow('warn', `${r.behind} update${r.behind === 1 ? '' : 's'} available`));
+      resultBody.appendChild(statusRow('warn', `有 ${r.behind} 项更新可用`));
       resultBody.appendChild(updateNote(r));
 
       if (r.commits && r.commits.length) {
@@ -146,7 +146,7 @@ export default {
         resultBody.appendChild(list);
       }
 
-      const installBtn = button(`Install ${r.behind} update${r.behind === 1 ? '' : 's'}`, { variant: 'primary', iconName: 'download', onClick: () => doInstall(r) });
+      const installBtn = button(`安装 ${r.behind} 项更新`, { variant: 'primary', iconName: 'download', onClick: () => doInstall(r) });
       resultBody.appendChild(el('div', { style: { marginTop: '16px' } }, installBtn));
     }
 
@@ -160,13 +160,13 @@ export default {
     async function doCheck() {
       checkBtn.disabled = true;
       clear(resultBody);
-      resultBody.appendChild(spinnerRow('Checking origin/main...'));
+      resultBody.appendChild(spinnerRow('正在检查 origin/main…'));
       try {
         last = await window.host.updatesCheck();
         renderResult(last);
       } catch (e) {
         clear(resultBody);
-        resultBody.appendChild(statusRow('bad', 'Check failed', String(e.message || e)));
+        resultBody.appendChild(statusRow('bad', '检查失败', String(e.message || e)));
       } finally {
         checkBtn.disabled = false;
       }
@@ -180,16 +180,16 @@ export default {
 
     async function doInstall(r) {
       clear(resultBody);
-      const prog = spinnerRow(r.localSource === 'git' ? 'Pulling origin/main...' : 'Updating from GitHub...');
+      const prog = spinnerRow(r.localSource === 'git' ? '正在拉取 origin/main…' : '正在从 GitHub 更新…');
       resultBody.appendChild(prog);
 
       if (r.localSource !== 'git') {
         progUnsub = window.host.onProjectProgress((d) => {
-          if (d.phase === 'download') prog._label.textContent = d.total ? `Downloading... ${fmtBytes(d.recv)} / ${fmtBytes(d.total)}` : `Downloading... ${fmtBytes(d.recv)}`;
-          else if (d.phase === 'resolve') prog._label.textContent = 'Resolving latest commit...';
-          else if (d.phase === 'extract') prog._label.textContent = 'Extracting...';
-          else if (d.phase === 'install') prog._label.textContent = 'Installing files...';
-          else if (d.phase === 'done') prog._label.textContent = 'Finishing...';
+          if (d.phase === 'download') prog._label.textContent = d.total ? `正在下载… ${fmtBytes(d.recv)} / ${fmtBytes(d.total)}` : `正在下载… ${fmtBytes(d.recv)}`;
+          else if (d.phase === 'resolve') prog._label.textContent = '正在解析最新提交…';
+          else if (d.phase === 'extract') prog._label.textContent = '正在解压…';
+          else if (d.phase === 'install') prog._label.textContent = '正在安装文件…';
+          else if (d.phase === 'done') prog._label.textContent = '正在完成…';
         });
       }
 
@@ -198,35 +198,35 @@ export default {
         if (progUnsub) { progUnsub(); progUnsub = null; }
         clear(resultBody);
         if (res.ok) {
-          toast(`Updated to ${res.head || 'latest'} - rebuilding`, 'good', 'Update installed');
+          toast(`已更新到 ${res.head || '最新版'}，正在重新构建`, 'good', '更新已安装');
           // The update only writes source. Without the build the server keeps launching the old bin/Debug exe and the update looks like it did nothing.
-          resultBody.appendChild(spinnerRow('Rebuilding the server... (output in the console)'));
+          resultBody.appendChild(spinnerRow('正在重新构建服务器…（输出见控制台）'));
           const built = await window.host.updatesRebuild();
           clear(resultBody);
           if (built.ok) {
-            toast('Server rebuilt successfully', 'good');
-            resultBody.appendChild(statusRow('good', 'Update installed', `Now at ${res.head || 'latest'} and rebuilt${built.restarted ? '. The server is back up' : ''}. Restart the control center when convenient.`));
+            toast('服务器重新构建成功', 'good');
+            resultBody.appendChild(statusRow('good', '更新已安装', `现已更新到 ${res.head || '最新版'}并完成构建${built.restarted ? '，服务器已重新启动' : ''}。请在方便时重启控制中心。`));
           } else {
-            toast(built.error || `Build failed (code ${built.code})`, 'bad', 'Rebuild failed');
-            resultBody.appendChild(statusRow('warn', 'Updated, but the rebuild failed', `Now at ${res.head || 'latest'}, though the previous build is still what runs. ${built.error || `dotnet build exited with code ${built.code}`} - the console has the full output.`));
-            const rb = button('Try the rebuild again', { variant: 'ghost', iconName: 'bolt', onClick: doRebuild });
+            toast(built.error || `构建失败（代码 ${built.code}）`, 'bad', '重新构建失败');
+            resultBody.appendChild(statusRow('warn', '更新成功，但重新构建失败', `源码现已更新到 ${res.head || '最新版'}，但当前运行的仍是旧构建。${built.error || `dotnet build 退出代码为 ${built.code}`}；完整输出见控制台。`));
+            const rb = button('重试构建', { variant: 'ghost', iconName: 'bolt', onClick: doRebuild });
             resultBody.appendChild(el('div', { style: { marginTop: '14px' } }, rb));
           }
         } else {
-          toast('Update could not be applied', 'bad');
+          toast('无法应用更新', 'bad');
           const detail = res.method === 'git'
-            ? 'Your local edits or a diverged branch blocked the fast-forward pull. Nothing was changed - commit or stash local changes and try again.'
-            : (res.error || 'The download could not be completed. Nothing was changed.');
-          resultBody.appendChild(statusRow('bad', res.method === 'git' ? 'Could not fast-forward' : 'Update failed', detail));
+            ? '本地修改或分叉分支阻止了快进拉取。没有文件被更改；请提交或暂存本地修改后重试。'
+            : (res.error || '下载未能完成，文件没有更改。');
+          resultBody.appendChild(statusRow('bad', res.method === 'git' ? '无法快进更新' : '更新失败', detail));
           if (res.output) resultBody.appendChild(el('pre.mono', { text: res.output, 'data-selectable': true, style: { marginTop: '12px', padding: '12px', background: 'var(--surface-2)', border: '1px solid var(--line)', borderRadius: 'var(--r-sm)', fontSize: '11.5px', color: 'var(--ink-2)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: '30vh', overflow: 'auto' } }));
-          const retry = button('Check again', { variant: 'ghost', iconName: 'refresh', onClick: doCheck });
+          const retry = button('重新检查', { variant: 'ghost', iconName: 'refresh', onClick: doCheck });
           resultBody.appendChild(el('div', { style: { marginTop: '14px' } }, retry));
         }
       } catch (e) {
         if (progUnsub) { progUnsub(); progUnsub = null; }
         toast(String(e.message || e), 'bad');
         clear(resultBody);
-        resultBody.appendChild(statusRow('bad', 'Update failed', String(e.message || e)));
+        resultBody.appendChild(statusRow('bad', '更新失败', String(e.message || e)));
       }
     }
 
@@ -234,17 +234,17 @@ export default {
       selfBtn.disabled = true;
       try {
         const r = await window.host.updatesCheckSelf();
-        if (r.dev) { toast('Running from source - pull the repo and restart to update the app.', 'warn', 'Dev build'); return; }
-        if (!r.ok) { toast(r.error || 'Update check failed.', 'bad', 'App update'); return; }
+        if (r.dev) { toast('当前从源码运行；请拉取仓库并重启应用以更新。', 'warn', '开发版本'); return; }
+        if (!r.ok) { toast(r.error || '更新检查失败。', 'bad', '应用更新'); return; }
         if (r.portable) {
-          if (r.available) toast(`Control Center ${r.version} is available - this build can't update in place, use the download page from the prompt.`, 'good', 'Update available');
-          else toast(`Control Center is up to date (v${r.current}).`, 'good', 'App update');
+          if (r.available) toast(`控制中心 ${r.version} 已发布；此版本无法原地更新，请使用提示中的下载页面。`, 'good', '有可用更新');
+          else toast(`控制中心已是最新版本（v${r.current}）。`, 'good', '应用更新');
           return;
         }
-        if (r.available) toast(`Control Center ${r.version} is available - follow the prompt to install.`, 'good', 'Update available');
-        else toast(`Control Center is up to date (v${r.current}).`, 'good', 'App update');
+        if (r.available) toast(`控制中心 ${r.version} 已发布，请按提示安装。`, 'good', '有可用更新');
+        else toast(`控制中心已是最新版本（v${r.current}）。`, 'good', '应用更新');
       } catch (e) {
-        toast(String(e.message || e), 'bad', 'App update');
+        toast(String(e.message || e), 'bad', '应用更新');
       } finally {
         selfBtn.disabled = false;
       }
@@ -252,10 +252,10 @@ export default {
 
     async function doRebuild() {
       rebuildBtn.disabled = true;
-      toast('Rebuilding server... (output in the console)', 'good', 'dotnet build');
+      toast('正在重新构建服务器…（输出见控制台）', 'good', 'dotnet build');
       try {
         const res = await window.host.updatesRebuild();
-        toast(res.ok ? 'Server rebuilt successfully' : (res.error || `Build failed (code ${res.code})`), res.ok ? 'good' : 'bad');
+        toast(res.ok ? '服务器重新构建成功' : (res.error || `构建失败（代码 ${res.code}）`), res.ok ? 'good' : 'bad');
       } catch (e) {
         toast(String(e.message || e), 'bad');
       } finally {

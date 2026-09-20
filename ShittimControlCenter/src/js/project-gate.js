@@ -32,12 +32,11 @@ export function renderProjectGate(appRoot, status, { titlebar }) {
 
   // A folder that was set and has since gone - unplugged drive, renamed, network share down - reads as "not found" unless it says so, and downloading a second copy over the top strands the database in the folder that is still there.
   const gone = status.configuredMissing && status.configured;
-  const heading = gone ? 'Server project folder is missing' : 'Server project not found';
+  const heading = gone ? '服务器项目文件夹已丢失' : '未找到服务器项目';
   const blurb = gone
-    ? `The control center is set to <span class="mono">${escapeHtml(status.configured)}</span>, and that folder is not there right now.
-          If it lives on a drive that is not plugged in, connect it and restart. Downloading a fresh copy leaves the
-          database and configuration in the old folder.`
-    : `The control center needs the Shittim-Server project to run.`;
+    ? `控制中心当前指向 <span class="mono">${escapeHtml(status.configured)}</span>，但该文件夹目前不存在。
+          如果它位于尚未连接的磁盘上，请连接磁盘后重启。重新下载一份项目不会迁移旧文件夹中的数据库和配置。`
+    : `控制中心需要 Shittim-Server 项目才能运行。`;
 
   col.appendChild(frag(`
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">
@@ -56,7 +55,7 @@ export function renderProjectGate(appRoot, status, { titlebar }) {
     'data-selectable': true,
     style: { fontSize: '12px', color: 'var(--blue-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: '0' },
   });
-  const changeBtn = button('Change...', { variant: 'ghost', sm: true, iconName: 'folder', onClick: async () => {
+  const changeBtn = button('更改…', { variant: 'ghost', sm: true, iconName: 'folder', onClick: async () => {
     if (busy) return;
     const picked = await window.host.pickFolder();
     if (!picked) return;
@@ -64,7 +63,7 @@ export function renderProjectGate(appRoot, status, { titlebar }) {
     targetLabel.textContent = targetDir;
   }});
 
-  const dlBtn = button('Download latest project', { variant: 'primary', iconName: 'download', onClick: doDownload });
+  const dlBtn = button('下载最新项目', { variant: 'primary', iconName: 'download', onClick: doDownload });
 
   const progressWrap = el('div', { style: { display: 'none', marginTop: '14px' } });
   const progressBar = el('div', { style: { height: '100%', width: '0%', background: 'var(--blue)', borderRadius: '999px', transition: 'width .15s ease' } });
@@ -74,27 +73,27 @@ export function renderProjectGate(appRoot, status, { titlebar }) {
   progressWrap.appendChild(progressText);
 
   const downloadCard = el('div.card', {},
-    el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: 'Download latest' }),
+    el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: '下载最新版' }),
       el('span.sub', { text: 'Neoexm/Shittim-Server - main' }), el('div.spacer', {})),
     el('div.card-body', {},
       el('p', {
-        html: 'Fetches a zip of the latest commit from GitHub.',
+        html: '从 GitHub 获取最新提交的压缩包。',
         style: { fontSize: '13px', color: 'var(--ink-2)', margin: '0 0 14px', lineHeight: '1.6' },
       }),
       el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', minWidth: '0', padding: '10px 12px', background: 'var(--surface-2)', border: '1px solid var(--line)', borderRadius: 'var(--r-sm)' } },
-        el('span', { text: 'Install to', style: { fontSize: '11.5px', fontWeight: '700', color: 'var(--ink-3)', flex: 'none' } }),
+        el('span', { text: '安装到', style: { fontSize: '11.5px', fontWeight: '700', color: 'var(--ink-3)', flex: 'none' } }),
         targetLabel, el('div.spacer', { style: { flex: '1' } }), changeBtn),
       el('div', { style: { marginTop: '16px' } }, dlBtn),
       progressWrap));
 
   col.appendChild(downloadCard);
 
-  const locateBtn = button('Locate folder...', { variant: 'ghost', iconName: 'folder', onClick: doLocate });
+  const locateBtn = button('选择文件夹…', { variant: 'ghost', iconName: 'folder', onClick: doLocate });
   const locateCard = el('div.card', { style: { marginTop: '16px' } },
-    el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: 'Use an existing folder' })),
+    el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: '使用现有文件夹' })),
     el('div.card-body', {},
       el('p', {
-        html: 'Choose the repo folder (the one that contains <b>Shittim-Server</b>) or the <b>Shittim-Server</b> project folder itself.',
+        html: '请选择包含 <b>Shittim-Server</b> 的仓库文件夹，或直接选择 <b>Shittim-Server</b> 项目文件夹。',
         style: { fontSize: '13px', color: 'var(--ink-2)', margin: '0 0 14px', lineHeight: '1.6' },
       }),
       locateBtn));
@@ -118,38 +117,38 @@ export function renderProjectGate(appRoot, status, { titlebar }) {
   async function doDownload() {
     if (busy) return;
     setBusy(true);
-    showProgress(2, 'Starting...');
+    showProgress(2, '正在开始…');
     unsub = window.host.onProjectProgress((d) => {
       if (d.phase === 'download') {
         const pct = d.total ? (d.recv / d.total) * 100 : 0;
-        showProgress(d.total ? pct : 8, d.total ? `Downloading... ${fmtBytes(d.recv)} / ${fmtBytes(d.total)}` : `Downloading... ${fmtBytes(d.recv)}`);
+        showProgress(d.total ? pct : 8, d.total ? `正在下载… ${fmtBytes(d.recv)} / ${fmtBytes(d.total)}` : `正在下载… ${fmtBytes(d.recv)}`);
       } else if (d.phase === 'resolve') {
-        showProgress(4, 'Resolving latest commit...');
+        showProgress(4, '正在解析最新提交…');
       } else if (d.phase === 'extract') {
-        showProgress(92, 'Extracting...');
+        showProgress(92, '正在解压…');
       } else if (d.phase === 'install') {
-        showProgress(97, 'Installing files...');
+        showProgress(97, '正在安装文件…');
       } else if (d.phase === 'done') {
-        showProgress(100, 'Done');
+        showProgress(100, '完成');
       } else if (d.phase === 'error') {
-        showProgress(100, d.message || 'Failed');
+        showProgress(100, d.message || '失败');
       }
     });
     try {
       const res = await window.host.projectDownload({ targetDir });
       if (unsub) { unsub(); unsub = null; }
       if (res && res.ok) {
-        showProgress(100, `Installed ${res.sha || ''} - starting...`);
-        toast('Project downloaded', 'good', 'Ready');
+        showProgress(100, `已安装 ${res.sha || ''}，正在启动…`);
+        toast('项目已下载', 'good', '准备就绪');
         setTimeout(() => location.reload(), 500);
       } else {
-        toast((res && res.error) || 'Download failed', 'bad');
-        showProgress(100, (res && res.error) || 'Download failed');
+        toast((res && res.error) || '下载失败', 'bad');
+        showProgress(100, (res && res.error) || '下载失败');
         setBusy(false);
       }
     } catch (e) {
       if (unsub) { unsub(); unsub = null; }
-      toast(String(e.message || e), 'bad', 'Download failed');
+      toast(String(e.message || e), 'bad', '下载失败');
       setBusy(false);
     }
   }
@@ -162,10 +161,10 @@ export function renderProjectGate(appRoot, status, { titlebar }) {
     try {
       const res = await window.host.projectSetPath(picked);
       if (res && res.ok) {
-        toast('Project located', 'good', 'Ready');
+        toast('已找到项目', 'good', '准备就绪');
         setTimeout(() => location.reload(), 350);
       } else {
-        toast((res && res.error) || 'No project found in that folder.', 'bad', 'Not found');
+        toast((res && res.error) || '该文件夹中未找到项目。', 'bad', '未找到');
         setBusy(false);
       }
     } catch (e) {

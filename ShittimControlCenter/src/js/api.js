@@ -2,18 +2,18 @@ const host = window.host;
 
 // Stable currency map (mirrors Schale.FlatData.CurrencyTypes) so the Accounts page can render balances regardless of how enum dict keys are serialized.
 export const CURRENCIES = [
-  [1, 'Gold'], [2, 'GemPaid'], [3, 'GemBonus'], [4, 'Gem'], [5, 'ActionPoint'],
-  [6, 'AcademyTicket'], [7, 'ArenaTicket'], [8, 'RaidTicket'],
-  [9, 'WeekDungeonChaserATicket'], [10, 'WeekDungeonFindGiftTicket'], [11, 'WeekDungeonBloodTicket'],
-  [12, 'WeekDungeonChaserBTicket'], [13, 'WeekDungeonChaserCTicket'],
-  [14, 'SchoolDungeonATicket'], [15, 'SchoolDungeonBTicket'], [16, 'SchoolDungeonCTicket'],
-  [17, 'TimeAttackDungeonTicket'], [18, 'MasterCoin'],
-  [19, 'WorldRaidTicketA'], [20, 'WorldRaidTicketB'], [21, 'WorldRaidTicketC'],
-  [22, 'ChaserTotalTicket'], [23, 'SchoolDungeonTotalTicket'],
-  [24, 'EliminateTicketA'], [25, 'EliminateTicketB'], [26, 'EliminateTicketC'], [27, 'EliminateTicketD'],
+  [1, 'Gold', '信用积分'], [2, 'GemPaid', '付费青辉石'], [3, 'GemBonus', '免费青辉石'], [4, 'Gem', '青辉石'], [5, 'ActionPoint', 'AP'],
+  [6, 'AcademyTicket', '日程券'], [7, 'ArenaTicket', '战术对抗赛挑战券'], [8, 'RaidTicket', '总力战挑战券'],
+  [9, 'WeekDungeonChaserATicket', '悬赏通缉（街区战）挑战券'], [10, 'WeekDungeonFindGiftTicket', '信用回收挑战券'], [11, 'WeekDungeonBloodTicket', '据点防御挑战券'],
+  [12, 'WeekDungeonChaserBTicket', '悬赏通缉（野外战）挑战券'], [13, 'WeekDungeonChaserCTicket', '悬赏通缉（室内战）挑战券'],
+  [14, 'SchoolDungeonATicket', '学院交流会（崔尼蒂）挑战券'], [15, 'SchoolDungeonBTicket', '学院交流会（歌赫娜）挑战券'], [16, 'SchoolDungeonCTicket', '学院交流会（千禧年）挑战券'],
+  [17, 'TimeAttackDungeonTicket', '综合战术考试挑战券'], [18, 'MasterCoin', '熟练证书'],
+  [19, 'WorldRaidTicketA', '联合行动挑战券'], [20, 'WorldRaidTicketB', '联合行动挑战券 ω'], [21, 'WorldRaidTicketC', '联合行动挑战券 ψ'],
+  [22, 'ChaserTotalTicket', '悬赏通缉票券'], [23, 'SchoolDungeonTotalTicket', '学院交流会票券'],
+  [24, 'EliminateTicketA', '大决战（轻装甲）票券'], [25, 'EliminateTicketB', '大决战（重装甲）票券'], [26, 'EliminateTicketC', '大决战（特殊装甲）票券'], [27, 'EliminateTicketD', '大决战（弹力装甲）票券'],
 ];
 export const CURRENCY_ID = Object.fromEntries(CURRENCIES.map(([id, name]) => [name, id]));
-export const CURRENCY_NAME = Object.fromEntries(CURRENCIES.map(([id, name]) => [id, name]));
+export const CURRENCY_NAME = Object.fromEntries(CURRENCIES.map(([id, , label]) => [id, label]));
 export const PRIMARY_CURRENCIES = [4, 1, 5, 7, 8, 18]; // Gem, Gold, AP, Arena, Raid, MasterCoin
 
 let apiPort = 5000;

@@ -277,7 +277,7 @@ public class ManagementController : ControllerBase
             r.ServerId,
             r.UniqueId,
             r.StackCount,
-            name = names.TryGetValue(r.UniqueId, out var n) ? n : $"Item {r.UniqueId}",
+            name = ChineseGameNames.Item(r.UniqueId, names.GetValueOrDefault(r.UniqueId) ?? $"物品 {r.UniqueId}"),
             icon = icons.TryGetValue(r.UniqueId, out var ic) ? ic : null,
         }));
     }
@@ -361,9 +361,10 @@ public class ManagementController : ControllerBase
             r.Level,
             r.FavorRank,
             devName = dev.TryGetValue(r.UniqueId, out var dn) ? dn : null,
-            name = names.TryGetValue(r.UniqueId, out var n) && !string.IsNullOrWhiteSpace(n)
-                ? n
-                : (dev.TryGetValue(r.UniqueId, out var d) ? d : $"Character {r.UniqueId}"),
+            name = ChineseGameNames.Student(r.UniqueId,
+                names.TryGetValue(r.UniqueId, out var n) && !string.IsNullOrWhiteSpace(n)
+                    ? n
+                    : (dev.TryGetValue(r.UniqueId, out var d) ? d : $"学生 {r.UniqueId}")),
         }));
     }
 
@@ -479,7 +480,7 @@ public class ManagementController : ControllerBase
         var results = query.Select(x => new
         {
             id = x.Id,
-            name = ResolveName(loc, x.LocalizeEtcId, x.Icon),
+            name = ChineseGameNames.Item(x.Id, ResolveName(loc, x.LocalizeEtcId, x.Icon)),
             icon = x.Icon,
             quality = x.Quality,
             stackMax = x.StackableMax,
@@ -506,7 +507,7 @@ public class ManagementController : ControllerBase
             .Select(x => new
             {
                 id = x.Id,
-                name = ResolveName(loc, x.LocalizeEtcId, x.DevName),
+                name = ChineseGameNames.Student(x.Id, ResolveName(loc, x.LocalizeEtcId, x.DevName)),
                 devName = x.DevName,
                 defaultStar = x.DefaultStarGrade,
                 maxStar = x.MaxStarGrade,
@@ -531,7 +532,7 @@ public class ManagementController : ControllerBase
         var results = _excel.GetTable<EquipmentExcelT>().Select(x => new
         {
             id = x.Id,
-            name = ResolveName(loc, x.LocalizeEtcId, x.Icon),
+            name = ChineseGameNames.Equipment(x.Id, ResolveName(loc, x.LocalizeEtcId, x.Icon)),
             icon = x.Icon,
             tier = x.TierInit,
             maxLevel = x.MaxLevel,
@@ -554,7 +555,7 @@ public class ManagementController : ControllerBase
     {
         var results = Enum.GetValues<CurrencyTypes>()
             .Where(c => c != CurrencyTypes.Invalid && c != CurrencyTypes.Max)
-            .Select(c => new { id = (long)c, name = c.ToString() });
+            .Select(c => new { id = (long)c, name = ChineseGameNames.Currency((long)c, c.ToString()) });
         return Ok(results);
     }
 
@@ -642,7 +643,7 @@ public class ManagementController : ControllerBase
     {
         var loc = LocalizeMap();
         var charNames = _excel.GetTable<CharacterExcelT>()
-            .ToDictionary(x => x.Id, x => ResolveName(loc, x.LocalizeEtcId, x.DevName));
+            .ToDictionary(x => x.Id, x => ChineseGameNames.Student(x.Id, ResolveName(loc, x.LocalizeEtcId, x.DevName)));
 
         var banners = _excel.GetTable<ShopRecruitExcelT>().Select(b => new
         {
@@ -671,7 +672,7 @@ public class ManagementController : ControllerBase
             start = s.SeasonStartData,
             end = s.SeasonEndData,
             settlement = s.SettlementEndDate,
-            boss = string.Join(", ", s.OpenRaidBossGroup ?? new List<string>()),
+            boss = ChineseGameNames.Boss(string.Join(", ", s.OpenRaidBossGroup ?? new List<string>())),
         });
 
         var grand = _excel.GetTable<EliminateRaidSeasonManageExcelT>().Select(s => new
@@ -681,8 +682,8 @@ public class ManagementController : ControllerBase
             start = s.SeasonStartData,
             end = s.SeasonEndData,
             settlement = s.SettlementEndDate,
-            boss = string.Join(" / ", new[] { s.OpenRaidBossGroup01, s.OpenRaidBossGroup02, s.OpenRaidBossGroup03 }
-                .Where(x => !string.IsNullOrWhiteSpace(x))),
+            boss = ChineseGameNames.Boss(string.Join(" / ", new[] { s.OpenRaidBossGroup01, s.OpenRaidBossGroup02, s.OpenRaidBossGroup03 }
+                .Where(x => !string.IsNullOrWhiteSpace(x)))),
         });
 
         var drill = _excel.GetTable<TimeAttackDungeonSeasonManageExcelT>().Select(s => new
@@ -692,7 +693,7 @@ public class ManagementController : ControllerBase
             start = s.StartDate,
             end = s.EndDate,
             settlement = (string?)null,
-            boss = $"Dungeon {s.DungeonId}",
+            boss = $"综合战术考试 {s.DungeonId}",
         });
 
         var final = _excel.GetTable<MultiFloorRaidSeasonManageExcelT>().Select(s => new
@@ -702,7 +703,7 @@ public class ManagementController : ControllerBase
             start = s.SeasonStartDate,
             end = s.SeasonEndDate,
             settlement = s.SettlementEndDate,
-            boss = s.OpenRaidBossGroupId,
+            boss = ChineseGameNames.Boss(s.OpenRaidBossGroupId),
         });
 
         await using var db = await _dbFactory.CreateDbContextAsync();
@@ -767,11 +768,11 @@ public class ManagementController : ControllerBase
     {
         var loc = _excel.GetTable<LocalizeExcelT>()
             .GroupBy(l => l.Key)
-            .ToDictionary(g => g.Key, g => g.First().En ?? g.First().Jp ?? g.First().Kr ?? "");
+            .ToDictionary(g => g.Key, g => ChineseGameNames.Simplify(g.First().Tw ?? g.First().En ?? g.First().Jp ?? g.First().Kr ?? ""));
 
         var etc = LocalizeMap();
-        var charNames = _excel.GetTable<CharacterExcelT>().GroupBy(c => c.Id).ToDictionary(g => g.Key, g => ResolveName(etc, g.First().LocalizeEtcId, null));
-        var itemNames = _excel.GetTable<ItemExcelT>().GroupBy(i => i.Id).ToDictionary(g => g.Key, g => ResolveName(etc, g.First().LocalizeEtcId, null));
+        var charNames = _excel.GetTable<CharacterExcelT>().GroupBy(c => c.Id).ToDictionary(g => g.Key, g => ChineseGameNames.Student(g.Key, ResolveName(etc, g.First().LocalizeEtcId, null)));
+        var itemNames = _excel.GetTable<ItemExcelT>().GroupBy(i => i.Id).ToDictionary(g => g.Key, g => ChineseGameNames.Item(g.Key, ResolveName(etc, g.First().LocalizeEtcId, null)));
         var bonuses = _excel.GetTable<EventContentCharacterBonusExcelT>().GroupBy(b => b.EventContentId).ToDictionary(g => g.Key, g => g.ToList());
         var currencies = _excel.GetTable<EventContentCurrencyItemExcelT>().GroupBy(c => c.EventContentId).ToDictionary(g => g.Key, g => g.ToList());
         var stageCounts = _excel.GetTable<EventContentStageExcelT>().GroupBy(s => s.EventContentId).ToDictionary(g => g.Key, g => g.Count());
@@ -809,7 +810,7 @@ public class ManagementController : ControllerBase
                 {
                     id = g.Key,
                     // 21 of these have no LocalizeExcel row, and the mini events all share one Name key, so showing the raw key would label eighteen different events identically.
-                    name = string.IsNullOrWhiteSpace(localized) ? $"Event #{g.Key}" : localized,
+                    name = ChineseGameNames.Event(g.Key, string.IsNullOrWhiteSpace(localized) ? $"活动 #{g.Key}" : localized),
                     key = head.Name,
                     types,
                     minigames = types.Where(t => t.StartsWith("MiniGame") || t.StartsWith("Minigame")).ToList(),
@@ -869,7 +870,7 @@ public class ManagementController : ControllerBase
         var currency = _excel.GetTable<EventContentCurrencyItemExcelT>()
             .Where(x => x.EventContentId == eventContentId)
             .GroupBy(x => x.ItemUniqueId)
-            .Select(g => new { itemId = g.Key, type = g.First().EventContentItemType.ToString(), name = itemNames.GetValueOrDefault(g.Key) })
+            .Select(g => new { itemId = g.Key, type = g.First().EventContentItemType.ToString(), name = ChineseGameNames.Item(g.Key, itemNames.GetValueOrDefault(g.Key)) })
             .ToList();
 
         // Handing out a token without saying what a run costs is how you end up with 23 of something the client wants 100 of, and the client blocks that entirely on its side so the server never gets a chance to explain.
@@ -1234,7 +1235,8 @@ public class ManagementController : ControllerBase
     private Dictionary<uint, string> LocalizeMap() =>
         _excel.GetTable<LocalizeEtcExcelT>()
             .GroupBy(x => x.Key)
-            .ToDictionary(g => g.Key, g => g.First().NameEn ?? g.First().NameJp ?? g.First().NameKr ?? "");
+            .ToDictionary(g => g.Key, g => ChineseGameNames.Simplify(
+                g.First().NameTw ?? g.First().NameEn ?? g.First().NameJp ?? g.First().NameKr ?? ""));
 
     private static string ResolveName(Dictionary<uint, string> loc, uint localizeId, string? fallback)
     {

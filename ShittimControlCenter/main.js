@@ -119,7 +119,7 @@ function hasWebSdk(dir) {
 }
 
 function startServer(offline) {
-  if (procs.server && !procs.server.killed) return { ok: false, error: 'Server already running' };
+  if (procs.server && !procs.server.killed) return { ok: false, error: '服务器已在运行' };
   const p = resolvePaths();
   const dn = resolveDotnet();
   const env = dotnetEnv(dn.root);
@@ -142,7 +142,7 @@ function startServer(offline) {
     args = ['run', '--project', p.csproj];
     cwd = p.serverDir;
   } else {
-    return { ok: false, error: 'No server executable or project found. Build the server first.' };
+    return { ok: false, error: '未找到服务器程序或项目，请先构建服务器。' };
   }
 
   broadcast('proc:log', { source: 'server', line: `> launching ${path.basename(cmd)} (cwd: ${cwd})` });
@@ -172,7 +172,7 @@ function startServer(offline) {
 }
 
 async function stopServer() {
-  if (!procs.server) return { ok: false, error: 'Server not running' };
+  if (!procs.server) return { ok: false, error: '服务器未运行' };
   const child = procs.server;
   const r = await killTree(child);
   if (!r.ok) {
@@ -185,9 +185,9 @@ async function stopServer() {
 }
 
 function startMitm(offline) {
-  if (procs.mitm && !procs.mitm.killed) return { ok: false, error: 'mitmproxy already running' };
+  if (procs.mitm && !procs.mitm.killed) return { ok: false, error: 'mitmproxy 已在运行' };
   const p = resolvePaths();
-  if (!fs.existsSync(p.redirectScript)) return { ok: false, error: 'redirect_server.py not found' };
+  if (!fs.existsSync(p.redirectScript)) return { ok: false, error: '未找到 redirect_server.py' };
 
   // local mode never sees these connections - the hosts file sends them to loopback and WinDivert does not divert loopback - so offline mitmproxy owns the ports itself. reverse:http:// still terminates the client's TLS, since next_layer inserts a client TLS layer when the first bytes are a ClientHello, where reverse:https:// would force TLS upstream onto a plaintext Kestrel; keep_host_header leaves the Host the addon routes on alone.
   const args = offline
@@ -237,7 +237,7 @@ function startMitm(offline) {
 }
 
 async function stopMitm() {
-  if (!procs.mitm) return { ok: false, error: 'mitmproxy not running' };
+  if (!procs.mitm) return { ok: false, error: 'mitmproxy 未运行' };
   const child = procs.mitm;
   const r = await killTree(child);
   if (!r.ok) {
@@ -285,7 +285,7 @@ function hostsWithBlock(text, on) {
 
 // hosts sits under System32, so staging the finished file next to it and copying it across keeps the elevated half down to one copy and a resolver cache flush - the cache matters because a name the client already looked up stays pointed at the real address until it is dropped.
 async function setOfflineHosts(on) {
-  if (process.platform !== 'win32') return { ok: false, error: 'Offline hosts entries are wired up for Windows only.' };
+  if (process.platform !== 'win32') return { ok: false, error: '离线 hosts 配置目前仅支持 Windows。' };
   const hosts = HOSTS_PATH();
   let cur;
   try {
@@ -304,7 +304,7 @@ async function setOfflineHosts(on) {
   const r = await runPwsh(ps, (l) => broadcast('proc:log', { source: 'mitm', line: l }));
   try { fs.unlinkSync(staged); } catch { /* ignore */ }
 
-  if (!r.ok) return { ok: false, error: 'the hosts file was not written - elevation was declined or the copy failed' };
+  if (!r.ok) return { ok: false, error: 'hosts 文件未写入：可能拒绝了管理员权限，或复制失败' };
   broadcast('proc:log', { source: 'mitm', line: on ? `> pointed ${OFFLINE_HOSTS.length} hosts at 127.0.0.2` : '> removed the offline hosts entries' });
   return { ok: true, changed: true, applied: on };
 }
@@ -340,21 +340,21 @@ async function pathDotnetHasWeb(dn) {
 async function checkDotnet() {
   const dn = resolveDotnet();
   const ver = await execCheck(dn.cmd, ['--version']);
-  if (!ver.ok) return { status: 'missing', detail: '.NET SDK not found - click Install' };
+  if (!ver.ok) return { status: 'missing', detail: '未找到 .NET SDK，请点击“安装”' };
   const where = dn.root ? dn.cmd : `${dn.cmd} on PATH`;
   const webOk = dn.root ? hasWebSdk(dn.root) : await pathDotnetHasWeb(dn);
-  if (!webOk) return { status: 'warning', detail: `SDK ${ver.detail} (${where}) - ASP.NET Core Web SDK missing; click Install` };
+  if (!webOk) return { status: 'warning', detail: `SDK ${ver.detail} (${where}) - 缺少 ASP.NET Core Web SDK，请点击“安装”` };
   return { status: 'ready', detail: `SDK ${ver.detail} (${where})` };
 }
 
 // The CA the client has to accept, and whether the machine actually accepts it. A file check passes in two states that break every handshake: the certutil step was declined, or mitmproxy regenerated its CA after that step ran and the store still holds the old one.
 async function checkCertificate() {
   const certPath = CERT_PATH();
-  if (!fs.existsSync(certPath)) return { status: 'warning', detail: 'CA certificate not generated yet' };
-  if (process.platform !== 'win32') return { status: 'warning', detail: `${certPath} - trust it in the system store yourself on this platform` };
+  if (!fs.existsSync(certPath)) return { status: 'warning', detail: '尚未生成 CA 证书' };
+  if (process.platform !== 'win32') return { status: 'warning', detail: `${certPath} - 请在当前系统中手动信任该证书` };
   const thumb = thumbprint(certPath);
-  if (await trustedRoot(thumb)) return { status: 'ready', detail: `${certPath} (${thumb.slice(0, 8)}, trusted)` };
-  return { status: 'warning', detail: `${certPath} exists but ${thumb.slice(0, 8)} is not in the root store - click Trust cert` };
+  if (await trustedRoot(thumb)) return { status: 'ready', detail: `${certPath} (${thumb.slice(0, 8)}，已信任)` };
+  return { status: 'warning', detail: `${certPath} exists but ${thumb.slice(0, 8)} 不在根证书存储中，请点击“信任证书”` };
 }
 
 async function runEnvChecks() {
@@ -427,9 +427,9 @@ async function githubApi(pathPart) {
     headers: { Accept: 'application/vnd.github+json' },
   });
   if (res.statusCode === 403 || res.statusCode === 429) {
-    throw new Error('GitHub API rate limit reached - try again in a little while.');
+    throw new Error('已达到 GitHub API 速率限制，请稍后再试。');
   }
-  if (res.statusCode === 404) throw new Error('Not found on GitHub (branch or repo missing).');
+  if (res.statusCode === 404) throw new Error('GitHub 上未找到目标（分支或仓库不存在）。');
   if (res.statusCode < 200 || res.statusCode >= 300) throw new Error(`GitHub API responded ${res.statusCode}`);
   return JSON.parse(res.body.toString('utf8'));
 }
@@ -502,15 +502,15 @@ function projectStatus() {
 
 // Point the control center at an existing folder. Accepts either the repo root (containing a Shittim-Server/ folder) or the Shittim-Server project folder itself, and normalises to the repo root that resolvePaths() expects.
 function setProjectPath(dir) {
-  if (!dir) return { ok: false, error: 'No folder selected.' };
-  if (!fs.existsSync(dir)) return { ok: false, error: 'That folder does not exist.' };
+  if (!dir) return { ok: false, error: '未选择文件夹。' };
+  if (!fs.existsSync(dir)) return { ok: false, error: '该文件夹不存在。' };
   let repoRoot = null;
   if (fs.existsSync(path.join(dir, 'Shittim-Server', 'Shittim-Server.csproj'))) repoRoot = dir;
   else if (fs.existsSync(path.join(dir, 'Shittim-Server.csproj'))) repoRoot = path.dirname(dir);
   else if (fs.existsSync(path.join(dir, 'Shittim-Server'))) repoRoot = dir;
-  else return { ok: false, error: 'No Shittim-Server project was found in that folder.' };
+  else return { ok: false, error: '所选文件夹中未找到 Shittim-Server 项目。' };
   try { saveSettings({ repoRoot }); }
-  catch (e) { return { ok: false, error: `Found the project, but could not remember the folder: ${e.message}` }; }
+  catch (e) { return { ok: false, error: `已找到项目，但无法保存文件夹位置： ${e.message}` }; }
   return { ok: true, repoRoot, status: projectStatus() };
 }
 
@@ -522,7 +522,7 @@ async function downloadProject({ targetDir, branch } = {}) {
   const send = (phase, extra) => broadcast('project:progress', { phase, ...extra });
   let tmpRoot = null;
   try {
-    send('resolve', { message: 'Resolving latest commit...' });
+    send('resolve', { message: '正在解析最新提交…' });
     const commit = await githubApi(`/commits/${encodeURIComponent(branch)}`);
     const sha = commit.sha;
     const subject = (commit.commit.message || '').split('\n')[0];
@@ -531,21 +531,21 @@ async function downloadProject({ targetDir, branch } = {}) {
     tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'scc-proj-'));
     const zipPath = path.join(tmpRoot, 'project.zip');
     const url = `https://codeload.github.com/${GH.owner}/${GH.repo}/zip/${sha}`;
-    send('download', { message: 'Downloading project...', recv: 0, total: 0 });
-    await downloadFile(url, zipPath, (recv, total) => send('download', { message: 'Downloading project...', recv, total }));
+    send('download', { message: '正在下载项目…', recv: 0, total: 0 });
+    await downloadFile(url, zipPath, (recv, total) => send('download', { message: '正在下载项目…', recv, total }));
 
-    send('extract', { message: 'Extracting...' });
+    send('extract', { message: '正在解压…' });
     const exDir = path.join(tmpRoot, 'x');
     await extractZip(zipPath, exDir);
     const top = fs.readdirSync(exDir)
       .map((n) => path.join(exDir, n))
       .find((q) => { try { return fs.statSync(q).isDirectory(); } catch { return false; } });
-    if (!top) throw new Error('downloaded archive was empty');
+    if (!top) throw new Error('下载的压缩包为空');
 
     // Refuse to merge anything that doesn't look like a complete checkout - nothing in the install has been touched up to this point.
     for (const probe of ['Shittim-Server/Shittim-Server.csproj', 'Schale/Schale.csproj']) {
       if (!fs.existsSync(path.join(top, probe))) {
-        throw new Error(`downloaded archive is incomplete (missing ${probe}) - nothing was changed`);
+        throw new Error(`下载的压缩包不完整 (missing ${probe}) - 未进行任何更改`);
       }
     }
 
@@ -553,17 +553,17 @@ async function downloadProject({ targetDir, branch } = {}) {
 
     // An update over an existing install copies the database and Config/ aside first. Neither is in the archive, so neither can be overwritten by the merge, but a migration on the next launch can rewrite the database and there is otherwise nothing to go back to.
     if (fs.existsSync(path.join(targetDir, 'Shittim-Server'))) {
-      send('backup', { message: 'Backing up your database and config...' });
+      send('backup', { message: '正在备份数据库和配置…' });
       const p = pathsFor(targetDir);
       const kept = backupUserData(userBackupRoot(), [p.dbPath, path.dirname(p.configPath), p.gachaConfigPath], `pre-update-${sha.slice(0, 7)}-${Date.now()}`);
       broadcast('proc:log', { source: 'server', line: `> backed up ${kept.saved.length} item(s) to ${kept.dir}` });
     }
 
-    send('install', { message: 'Installing files...' });
+    send('install', { message: '正在安装文件…' });
     const previous = readVersionMarker(targetDir);
     const merged = installTree(top, targetDir, {
       previousManifest: previous && previous.manifest,
-      onProgress: (done, total) => send('install', { message: 'Installing files...', recv: done, total }),
+      onProgress: (done, total) => send('install', { message: '正在安装文件…', recv: done, total }),
     });
     if (!merged.ok) {
       const shown = merged.blockers.slice(0, 5).map((f) => `${f.path} (${f.error})`).join(', ');
@@ -588,7 +588,7 @@ async function downloadProject({ targetDir, branch } = {}) {
       remembered = false;
       broadcast('proc:log', { source: 'server', line: `> installed to ${targetDir}, but the folder could not be remembered: ${e.message}` });
     }
-    send('done', { message: 'Done', repoRoot: targetDir, sha: sha.slice(0, 7) });
+    send('done', { message: '完成', repoRoot: targetDir, sha: sha.slice(0, 7) });
     return { ok: true, repoRoot: targetDir, sha: sha.slice(0, 7), remembered };
   } catch (e) {
     send('error', { message: String(e.message || e) });
@@ -623,7 +623,7 @@ async function checkUpdates() {
   const p = resolvePaths();
   const repoRoot = p.repoRoot;
   if (!fs.existsSync(p.csproj) && !p.exePath) {
-    return { ok: false, error: 'Server project not found - download or locate it first.', noProject: true };
+    return { ok: false, error: '未找到服务器项目，请先下载或定位项目。', noProject: true };
   }
 
   // Local identity: prefer the marker a download left; else a real git checkout.
@@ -645,7 +645,7 @@ async function checkUpdates() {
   // Remote tip via the API (no fetch, no clone).
   let remote;
   try { remote = await githubApi(`/commits/${encodeURIComponent(branch)}`); }
-  catch (e) { return { ok: false, error: `Could not reach GitHub: ${String(e.message || e)}` }; }
+  catch (e) { return { ok: false, error: `无法连接 GitHub： ${String(e.message || e)}` }; }
   const remoteSha = remote.sha;
   const base = {
     ok: true, branch, localSource, repoRoot,
@@ -745,14 +745,14 @@ async function watchServerUpdates() {
 
 async function rebuildServer() {
   const p = resolvePaths();
-  if (!fs.existsSync(p.csproj)) return { ok: false, error: 'Server project not found' };
+  if (!fs.existsSync(p.csproj)) return { ok: false, error: '未找到服务器项目' };
 
   // The build can't replace Shittim-Server.exe or Schale.dll while the server holds them open, so a live one comes down for it and goes back up after. Under `dotnet run` the server is a grandchild of the process we wait on and outlives it slightly, hence the settle.
   const running = procs.server && !procs.server.killed ? procs.server : null;
   if (running) {
     broadcast('proc:log', { source: 'server', line: '> stopping the server so the build can replace its binaries...' });
     const down = await stopServer();
-    if (!down.ok) return { ok: false, error: `the server is still running, so the build would fail to replace its binaries: ${down.error}` };
+    if (!down.ok) return { ok: false, error: `服务器仍在运行，构建过程无法替换程序文件： ${down.error}` };
     await new Promise((resolve) => {
       const bail = setTimeout(resolve, 10000);
       running.once('exit', () => { clearTimeout(bail); setTimeout(resolve, 500); });
@@ -843,9 +843,9 @@ async function addToUserPath(dir, step) {
 async function installDotnet() {
   const step = 'dotnet';
   if (process.platform !== 'win32') {
-    return { ok: false, error: 'Automated .NET install is wired up for Windows only - install the .NET 10 SDK from https://dotnet.microsoft.com/download/dotnet/10.0.' };
+    return { ok: false, error: '自动安装 .NET 目前仅支持 Windows；请从 https://dotnet.microsoft.com/download/dotnet/10.0 安装 .NET 10 SDK。' };
   }
-  setupPhase(step, 'running', { message: '~250 MB, this can take a few minutes' });
+  setupPhase(step, 'running', { message: '约 250 MB，可能需要几分钟' });
   let tmp = null;
   let beat = null;
   try {
@@ -856,7 +856,7 @@ async function installDotnet() {
     const dir = DOTNET_DIR();
     setupLog(step, `> dotnet-install.ps1 -Channel 10.0 -InstallDir "${dir}"`);
     // dotnet-install.ps1 emits almost nothing during the big transfer, so keep a heartbeat going to prove the step is still alive in the log/UI.
-    beat = setInterval(() => setupPhase(step, 'running', { message: 'downloading in the background' }), 3000);
+    beat = setInterval(() => setupPhase(step, 'running', { message: '正在后台下载' }), 3000);
     // -NoPath: the script's session-only PATH edit is useless to us; we persist it ourselves below. The install is a no-op if the SDK is already present.
     const ps = `& ${psQuote(scriptPath)} -Channel 10.0 -InstallDir ${psQuote(dir)} -Architecture x64 -NoPath`;
     const r = await runPwsh(ps, (l) => setupLog(step, l));
@@ -864,12 +864,12 @@ async function installDotnet() {
     if (!r.ok) { setupPhase(step, 'failed', { message: 'dotnet-install.ps1 failed' }); return { ok: false, error: 'dotnet-install.ps1 failed', out: r.out }; }
     // A base SDK without the ASP.NET Core Web SDK still builds far enough to fail with "SDK 'Microsoft.NET.Sdk.Web' could not be found" - catch that here rather than letting the first server launch surface it.
     if (!hasWebSdk(dir)) {
-      setupPhase(step, 'failed', { message: 'Install finished but the ASP.NET Core Web SDK is missing - re-run install.' });
-      return { ok: false, error: `Microsoft.NET.Sdk.Web not found under ${path.join(dir, 'sdk')} - the SDK install looks incomplete.` };
+      setupPhase(step, 'failed', { message: '安装已结束，但缺少 ASP.NET Core Web SDK，请重新安装。' });
+      return { ok: false, error: `Microsoft.NET.Sdk.Web not found under ${path.join(dir, 'sdk')} - SDK 安装似乎不完整。` };
     }
     await addToUserPath(dir, step);
     setupLog(step, `> verified ASP.NET Core Web SDK is present in ${dir}`);
-    setupPhase(step, 'done', { message: '.NET 10 SDK installed' });
+    setupPhase(step, 'done', { message: '.NET 10 SDK 已安装' });
     return { ok: true, dir };
   } catch (e) {
     setupPhase(step, 'failed', { message: String(e.message || e) });
@@ -884,7 +884,7 @@ async function installDotnet() {
 async function installMitmproxy() {
   const step = 'mitmproxy';
   if (process.platform !== 'win32') {
-    return { ok: false, error: 'Automated mitmproxy install is wired up for Windows only - install it from https://mitmproxy.org/.' };
+    return { ok: false, error: '自动安装 mitmproxy 目前仅支持 Windows；请从 https://mitmproxy.org/ 安装。' };
   }
   setupPhase(step, 'running', { message: `Downloading mitmproxy ${MITM_VERSION}...` });
   let tmp = null;
@@ -896,17 +896,17 @@ async function installMitmproxy() {
     await downloadFile(url, installer, (recv, total) => broadcast('setup:progress', { step, recv, total }));
 
     const dir = MITM_INSTALL_DIR();
-    setupPhase(step, 'running', { message: 'Approve the elevation prompt' });
+    setupPhase(step, 'running', { message: '请批准管理员权限请求' });
     setupLog(step, `> running installer silently into ${dir} (requires elevation)`);
     // Inno Setup silent switches; -Verb RunAs raises the one UAC prompt the requireAdministrator manifest forces.
     // ArgumentList as a single string is passed verbatim so /DIR="...with spaces..." reaches Inno intact.
     const innoArgs = `/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR="${dir}"`;
     const ps = `$p = Start-Process -FilePath ${psQuote(installer)} -ArgumentList ${psQuote(innoArgs)} -Verb RunAs -PassThru -Wait; exit $p.ExitCode`;
     const r = await runPwsh(ps, (l) => setupLog(step, l));
-    if (!r.ok) { setupPhase(step, 'failed', { message: 'installer failed or elevation was declined' }); return { ok: false, error: 'mitmproxy installer failed or elevation was declined', out: r.out }; }
+    if (!r.ok) { setupPhase(step, 'failed', { message: '安装程序失败或管理员权限请求被拒绝' }); return { ok: false, error: 'mitmproxy 安装程序失败或管理员权限请求被拒绝', out: r.out }; }
 
     const binDir = findMitmBinDir(dir);
-    if (!binDir) throw new Error(`mitmweb.exe not found under ${dir} after install`);
+    if (!binDir) throw new Error(`安装后未在以下目录找到 mitmweb.exe： ${dir} after install`);
     await addToUserPath(binDir, step);
     setupPhase(step, 'done', { message: `mitmproxy ${MITM_VERSION} installed` });
     return { ok: true, dir: binDir };
@@ -943,22 +943,22 @@ function generateMitmCert(step) {
 async function installCertificate() {
   const step = 'certificate';
   if (process.platform !== 'win32') {
-    return { ok: false, error: 'Automated certificate trust is wired up for Windows only.' };
+    return { ok: false, error: '自动信任证书目前仅支持 Windows。' };
   }
-  setupPhase(step, 'running', { message: 'Preparing CA certificate...' });
+  setupPhase(step, 'running', { message: '正在准备 CA 证书…' });
   try {
     const certPath = CERT_PATH();
     if (!fs.existsSync(certPath)) {
       setupLog(step, '> generating mitmproxy CA (first run)...');
       await generateMitmCert(step);
     }
-    if (!fs.existsSync(certPath)) throw new Error('mitmproxy CA certificate was not generated - install mitmproxy first.');
+    if (!fs.existsSync(certPath)) throw new Error('未生成 mitmproxy CA 证书，请先安装 mitmproxy。');
     setupLog(step, '> trusting CA in machine root store (certutil - approve the elevation prompt)...');
     // Machine root store is what the Steam client validates against, so it needs admin. Start-Process -Verb RunAs raises the single UAC prompt.
     const ps = `$p = Start-Process -FilePath 'certutil.exe' -ArgumentList @('-addstore','-f','Root', ${psQuote(certPath)}) -Verb RunAs -PassThru -Wait; exit $p.ExitCode`;
     const r = await runPwsh(ps, (l) => setupLog(step, l));
-    if (!r.ok) { setupPhase(step, 'failed', { message: 'certutil failed or elevation was declined' }); return { ok: false, error: 'certutil failed or elevation was declined', out: r.out }; }
-    setupPhase(step, 'done', { message: 'CA certificate trusted', certPath });
+    if (!r.ok) { setupPhase(step, 'failed', { message: 'certutil 失败或管理员权限请求被拒绝' }); return { ok: false, error: 'certutil 失败或管理员权限请求被拒绝', out: r.out }; }
+    setupPhase(step, 'done', { message: 'CA 证书已信任', certPath });
     return { ok: true, certPath };
   } catch (e) {
     setupPhase(step, 'failed', { message: String(e.message || e) });
@@ -974,7 +974,7 @@ async function runSetup(which) {
     if (step === 'dotnet') results.dotnet = await installDotnet();
     else if (step === 'mitmproxy') results.mitmproxy = await installMitmproxy();
     else if (step === 'certificate') results.certificate = await installCertificate();
-    else return { ok: false, error: `unknown setup step: ${step}` };
+    else return { ok: false, error: `未知环境配置步骤： ${step}` };
   }
   const ok = Object.values(results).every((r) => r && r.ok);
   broadcast('setup:progress', { step: which, status: ok ? 'all-done' : 'all-failed' });
@@ -1050,9 +1050,9 @@ async function exportLogs() {
   const p = resolvePaths();
   const stamp = new Date().toISOString().replace(/[:T]/g, '-').replace(/\..+$/, '');
   const res = await dialog.showSaveDialog({
-    title: 'Export logs',
+    title: '导出日志',
     defaultPath: path.join(documentsDir(), `shittim-logs-${stamp}.zip`),
-    filters: [{ name: 'Zip archive', extensions: ['zip'] }],
+    filters: [{ name: 'ZIP 压缩包', extensions: ['zip'] }],
   });
   if (res.canceled || !res.filePath) return { ok: false, canceled: true };
   const destZip = res.filePath;
@@ -1075,7 +1075,7 @@ async function exportLogs() {
     try { fs.writeFileSync(path.join(staging, 'controlcenter-info.txt'), await buildDiagnosticInfo()); count++; } catch { /* skip */ }
 
     const entries = fs.readdirSync(staging).map((n) => path.join(staging, n));
-    if (!entries.length) return { ok: false, error: 'No logs were found to export.' };
+    if (!entries.length) return { ok: false, error: '没有可导出的日志。' };
 
     try { if (fs.existsSync(destZip)) fs.rmSync(destZip, { force: true }); } catch { /* -Force handles overwrite */ }
     await compressArchive(entries, destZip);
@@ -1138,13 +1138,13 @@ async function checkManualSelfUpdate() {
   const win = BrowserWindow.getAllWindows()[0] || null;
   const { response } = await dialog.showMessageBox(win, {
     type: 'info',
-    buttons: ['Open download page', 'Later'],
+    buttons: ['打开下载页面', '稍后'],
     defaultId: 0,
     cancelId: 1,
-    title: 'Control Center update available',
-    message: `Shittim Control Center ${latest} is available.`,
+    title: '控制中心有可用更新',
+    message: `什亭控制中心 ${latest} 已发布。`,
     detail: `You are running ${app.getVersion()} as a build that cannot update itself in place. ` +
-      'Grab the new installer or portable exe from the releases page.',
+      '请从发布页面获取新的安装程序或便携版 EXE。',
   });
   if (response === 0) shell.openExternal(feed.htmlUrl);
   return { ok: true, portable: true, current: app.getVersion(), version: latest, available: true };
@@ -1185,12 +1185,12 @@ function setupAutoUpdate(win) {
       broadcast('update:self', { phase: 'available', version: info.version });
       const { response } = await dialog.showMessageBox(win, {
         type: 'info',
-        buttons: ['Download && install', 'Later'],
+        buttons: ['下载并安装', '稍后'],
         defaultId: 0,
         cancelId: 1,
-        title: 'Control Center update available',
-        message: `Shittim Control Center ${info.version} is available.`,
-        detail: `You are running ${app.getVersion()}. The update installs when you close the app.`,
+        title: '控制中心有可用更新',
+        message: `什亭控制中心 ${info.version} 已发布。`,
+        detail: `You are running ${app.getVersion()}. 更新将在你关闭应用时安装。`,
       });
       if (response === 0) {
         broadcast('update:self', { phase: 'downloading', percent: 0 });
@@ -1204,11 +1204,11 @@ function setupAutoUpdate(win) {
       broadcast('update:self', { phase: 'downloaded', version: info.version });
       const { response } = await dialog.showMessageBox(win, {
         type: 'info',
-        buttons: ['Restart now', 'On next quit'],
+        buttons: ['立即重启', '下次退出时安装'],
         defaultId: 0,
         cancelId: 1,
-        title: 'Update ready',
-        message: `Shittim Control Center ${info.version} downloaded.`,
+        title: '更新已就绪',
+        message: `什亭控制中心 ${info.version} 已下载。`,
       });
       if (response === 0) setImmediate(() => autoUpdater.quitAndInstall());
     });
@@ -1234,7 +1234,7 @@ async function checkSelfUpdate() {
     catch (e) { return { ok: false, error: String(e.message || e) }; }
   }
   const autoUpdater = setupAutoUpdate(BrowserWindow.getAllWindows()[0] || null);
-  if (!autoUpdater) return { ok: false, error: 'Updater is not available in this build.' };
+  if (!autoUpdater) return { ok: false, error: '此构建不提供自动更新功能。' };
   try {
     // Aim electron-updater at the newest release that actually has a feed; the embedded app-update.yml remains the fallback if the API is unreachable.
     const feed = await resolveSelfUpdateFeed().catch(() => null);
@@ -1264,7 +1264,7 @@ function createWindow() {
     show: false,
     frame: false,
     backgroundColor: '#0d1826',
-    title: 'Shittim Control Center',
+    title: '什亭控制中心',
     icon: appIcon(),
     webPreferences: {
       preload: path.join(APP_DIR, 'preload.js'),
@@ -1304,8 +1304,8 @@ ipcMain.handle('system:start', () => {
   return { ok: server.ok || mitm.ok, server, mitm };
 });
 ipcMain.handle('system:stop', async () => {
-  const server = procs.server ? await stopServer() : { ok: true, error: 'Server not running' };
-  const mitm = procs.mitm ? await stopMitm() : { ok: true, error: 'mitmproxy not running' };
+  const server = procs.server ? await stopServer() : { ok: true, error: '服务器未运行' };
+  const mitm = procs.mitm ? await stopMitm() : { ok: true, error: 'mitmproxy 未运行' };
   const hosts = offlineHostsApplied() ? await setOfflineHosts(false) : { ok: true, changed: false };
   return { ok: server.ok && mitm.ok, server, mitm, hosts };
 });

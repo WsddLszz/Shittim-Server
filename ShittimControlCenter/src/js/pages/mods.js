@@ -3,12 +3,12 @@ import { api } from '../api.js';
 import { gate } from './_util.js';
 
 const SECTIONS = [
-  { id: 'characters', name: 'Custom characters', desc: 'Clone a student onto a free id and edit her profile, stats and school.' },
+  { id: 'characters', name: '自定义学生', desc: '将学生克隆到空闲 ID，并编辑档案、属性与学校。' },
 ];
 
 export default {
   id: 'mods',
-  title: 'Mods',  icon: 'flask',
+  title: '模组',  icon: 'flask',
   needsTarget: false,
 
   mount(root) {
@@ -35,39 +35,39 @@ export default {
         list.appendChild(row);
       }
       host.appendChild(el('div.card', {},
-        el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: 'Mods' }), el('span.sub', { text: 'edits the game data, not the account' })),
+        el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: '模组' }), el('span.sub', { text: '修改游戏数据，而非账号存档' })),
         el('div.card-body', {}, list,
-          frag('<p class="muted" style="font-size:12px;margin:12px 0 0;line-height:1.6">Everything here writes to the ExcelDB the server reads and to the copy inside the game install, so the server has to be restarted and the game relaunched before a change shows up.</p>'))));
+          frag('<p class="muted" style="font-size:12px;margin:12px 0 0;line-height:1.6">这里的改动会同时写入服务器读取的 ExcelDB 和游戏安装目录中的副本。修改后需重启服务器并重新启动游戏才会生效。</p>'))));
     }
 
     function characters() {
-      const back = button('Back', { variant: 'ghost', sm: true, iconName: 'x', onClick: () => go('menu') });
-      const add = button('Add character', { variant: 'primary', sm: true, iconName: 'plus', onClick: importFlow });
+      const back = button('返回', { variant: 'ghost', sm: true, iconName: 'x', onClick: () => go('menu') });
+      const add = button('添加学生', { variant: 'primary', sm: true, iconName: 'plus', onClick: importFlow });
       const body = el('div.card-body', {});
       host.appendChild(el('div.card', {},
-        el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: 'Custom characters' }), el('div.spacer', {}), back, add),
+        el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: '自定义学生' }), el('div.spacer', {}), back, add),
         body));
 
       body.innerHTML = '<div class="empty"><div class="spinner"></div></div>';
       api.modsCharacters().then((data) => {
         clear(body);
         if (!data.characters.length) {
-          body.appendChild(frag('<div class="empty"><b>No custom characters</b><span>Add one from a zip and it gets cloned onto a free student id.</span></div>'));
+          body.appendChild(frag('<div class="empty"><b>暂无自定义学生</b><span>从 ZIP 添加后会克隆到一个空闲学生 ID。</span></div>'));
         } else {
           const list = el('div.picker-list', {});
           for (const c of data.characters) {
-            const row = frag(`<div class="picker-item"><span class="pi-id">${c.id}</span><span class="pi-name">${escapeHtml(c.name || 'unnamed')}</span><span class="tag grey">from ${c.donorId}</span>${c.assets.length ? `<span class="tag">${c.assets.length} file${c.assets.length === 1 ? '' : 's'}</span>` : ''}</div>`);
+            const row = frag(`<div class="picker-item"><span class="pi-id">${c.id}</span><span class="pi-name">${escapeHtml(c.name || '未命名')}</span><span class="tag grey">来源 ${c.donorId}</span>${c.assets.length ? `<span class="tag">${c.assets.length} 个文件</span>` : ''}</div>`);
             row.addEventListener('click', () => go('editor', c.id));
             list.appendChild(row);
           }
           body.appendChild(list);
         }
-        body.appendChild(frag(`<p class="muted" style="font-size:12px;margin:12px 0 0;line-height:1.6">Writing to ${data.databases} ExcelDB cop${data.databases === 1 ? 'y' : 'ies'}. A backup is taken next to each one the first time a mod is installed.</p>`));
-      }).catch((e) => { body.innerHTML = `<div class="empty"><b>Couldn't load</b><span>${escapeHtml(String(e.message || e))}</span></div>`; });
+        body.appendChild(frag(`<p class="muted" style="font-size:12px;margin:12px 0 0;line-height:1.6">正在写入 ${data.databases} 份 ExcelDB。首次安装模组时会在每份数据库旁创建备份。</p>`));
+      }).catch((e) => { body.innerHTML = `<div class="empty"><b>加载失败</b><span>${escapeHtml(String(e.message || e))}</span></div>`; });
     }
 
     async function importFlow() {
-      const zipPath = await window.host.pickFile([{ name: 'Character mod', extensions: ['zip'] }]);
+      const zipPath = await window.host.pickFile([{ name: '学生模组', extensions: ['zip'] }]);
       if (!zipPath) return;
 
       let info;
@@ -78,58 +78,58 @@ export default {
       let donorName = null;
 
       const name = input({ value: info.name || '', placeholder: 'Shirakami Suzu' });
-      const id = input({ type: 'number', placeholder: 'next free id' });
+      const id = input({ type: 'number', placeholder: '下一个空闲 ID' });
       const donorLabel = el('div', {});
-      const pickDonor = button('Choose donor', { variant: 'ghost', sm: true, iconName: 'users', onClick: () => {
-        openPicker({ title: 'Borrow from', loader: (q) => api.staticCharacters(q).then((r) => r.map((x) => ({ id: x.id, name: x.name, sub: `★${x.maxStar}` }))),
+      const pickDonor = button('选择模板学生', { variant: 'ghost', sm: true, iconName: 'users', onClick: () => {
+        openPicker({ title: '选择模板', loader: (q) => api.staticCharacters(q).then((r) => r.map((x) => ({ id: x.id, name: x.name, sub: `★${x.maxStar}` }))),
           onPick: (it) => { donorId = it.id; donorName = it.name; paintDonor(); } });
       }});
       function paintDonor() {
         clear(donorLabel);
-        if (donorId) donorLabel.appendChild(frag(`<div class="chip"><div class="chip-ic">${'★'}</div><div class="chip-main"><b>${escapeHtml(donorName || ('Character ' + donorId))}</b><span>id ${donorId}</span></div></div>`));
-        else donorLabel.appendChild(frag('<div class="muted" style="font-size:12.5px">Pick the student whose rows the new one is built from</div>'));
+        if (donorId) donorLabel.appendChild(frag(`<div class="chip"><div class="chip-ic">${'★'}</div><div class="chip-main"><b>${escapeHtml(donorName || ('学生 ' + donorId))}</b><span>id ${donorId}</span></div></div>`));
+        else donorLabel.appendChild(frag('<div class="muted" style="font-size:12.5px">请选择用于构建新学生数据的模板学生</div>'));
       }
       paintDonor();
 
       const staged = info.assets.length
-        ? `<p class="muted" style="font-size:12px;margin:12px 0 0;line-height:1.6">${info.assets.length} art/audio file${info.assets.length === 1 ? '' : 's'} in the zip get copied into the mods folder but are <b>not</b> installed - a new asset path cannot be registered without repacking the game's addressable catalog, so she draws the donor's art.</p>`
-        : '<p class="muted" style="font-size:12px;margin:12px 0 0;line-height:1.6">The zip carries no art, so she draws the donor\'s.</p>';
+        ? `<p class="muted" style="font-size:12px;margin:12px 0 0;line-height:1.6">ZIP 中的 ${info.assets.length} 个美术/音频文件会复制到模组目录，但<b>不会</b>安装。若不重新打包游戏的 Addressables 目录就无法注册新资源路径，因此仍会使用模板学生的素材。</p>`
+        : '<p class="muted" style="font-size:12px;margin:12px 0 0;line-height:1.6">ZIP 中没有美术资源，因此会使用模板学生的素材。</p>';
 
-      const install = button('Install', { variant: 'primary', iconName: 'download' });
-      const cancel = button('Cancel', { variant: 'ghost' });
+      const install = button('安装', { variant: 'primary', iconName: 'download' });
+      const cancel = button('取消', { variant: 'ghost' });
       const ref = modal({
-        title: 'Add custom character', wide: true,
+        title: '添加自定义学生', wide: true,
         body: el('div', {},
-          field('Name', name, 'shown on the card and in the student list'),
+          field('名称', name, '显示在卡片和学生列表中'),
           el('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', margin: '0 0 14px' } }, donorLabel, el('div.spacer', {}), pickDonor),
-          field('Character id', id, 'leave blank to take the next free one'),
+          field('学生 ID', id, '留空则使用下一个空闲 ID'),
           frag(`<div class="muted mono" data-selectable style="font-size:11px;overflow-wrap:anywhere">${escapeHtml(zipPath)}</div>`),
           frag(staged)),
         footer: [cancel, install],
       });
       cancel.addEventListener('click', ref.close);
       install.addEventListener('click', async () => {
-        if (!donorId) { toast('Pick a donor student first', 'warn'); return; }
+        if (!donorId) { toast('请先选择模板学生', 'warn'); return; }
         install.disabled = true;
         try {
           const made = await api.modsImport({ zipPath, donorId, id: id.value ? parseInt(id.value, 10) : null, name: name.value.trim(), overrides: info.overrides || {} });
           ref.close();
-          toast(`${made.name} installed as ${made.id}`, 'good', 'Restart the server');
+          toast(`${made.name} 已安装为 ${made.id}`, 'good', '请重启服务器');
           paint();
         } catch (e) { install.disabled = false; toast(e.message, 'bad'); }
       });
     }
 
     function editor(id) {
-      const back = button('Back', { variant: 'ghost', sm: true, iconName: 'x', onClick: () => go('characters') });
+      const back = button('返回', { variant: 'ghost', sm: true, iconName: 'x', onClick: () => go('characters') });
       const body = el('div.card-body', {});
-      const head = el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: 'Character ' + id }), el('div.spacer', {}), back);
+      const head = el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: '学生 ' + id }), el('div.spacer', {}), back);
       host.appendChild(el('div.card', {}, head, body));
 
       body.innerHTML = '<div class="empty"><div class="spinner"></div></div>';
       api.modsCharacter(id).then((d) => {
         clear(body);
-        head.querySelector('h3').textContent = `${d.name || 'unnamed'} - ${id}`;
+        head.querySelector('h3').textContent = `${d.name || '未命名'} - ${id}`;
 
         const name = input({ value: d.name || '' });
         const inputs = { character: {}, profile: {}, stat: {} };
@@ -145,13 +145,13 @@ export default {
           return el('div', {}, el('div', { text: title, style: { fontSize: '13px', fontWeight: '600', margin: '18px 0 10px' } }), grid);
         }
 
-        body.appendChild(field('Display name', name, 'the LocalizeEtc row this character points at'));
+        body.appendChild(field('显示名称', name, '该学生指向的 LocalizeEtc 条目'));
         body.appendChild(el('div', {},
-          group('Character', d.character, inputs.character, false),
-          group('Profile', d.profile, inputs.profile, false),
-          group('Stats', d.stat, inputs.stat, true)));
+          group('学生基础数据', d.character, inputs.character, false),
+          group('档案', d.profile, inputs.profile, false),
+          group('属性', d.stat, inputs.stat, true)));
 
-        const save = button('Save', { variant: 'primary', iconName: 'save', onClick: async () => {
+        const save = button('保存', { variant: 'primary', iconName: 'save', onClick: async () => {
           const payload = { name: name.value.trim() };
           for (const part of ['character', 'profile', 'stat']) {
             const changed = {};
@@ -163,22 +163,22 @@ export default {
           save.disabled = true;
           try {
             await api.modsUpdate(id, payload);
-            toast('Saved - restart the server for it to take', 'good');
+            toast('已保存；重启服务器后生效', 'good');
             go('characters');
           } catch (e) { save.disabled = false; toast(e.message, 'bad'); }
         }});
-        const remove = button('Delete character', { variant: 'danger', iconName: 'trash', onClick: async () => {
-          const ok = await confirmDialog({ title: 'Delete character', confirmLabel: 'Delete', danger: true,
-            message: `Every row cloned for ${id} is dropped from all ExcelDB copies. Accounts that already own her keep a row pointing at an id that no longer exists.` });
+        const remove = button('删除学生', { variant: 'danger', iconName: 'trash', onClick: async () => {
+          const ok = await confirmDialog({ title: '删除学生', confirmLabel: '删除', danger: true,
+            message: `将从所有 ExcelDB 副本中删除为 ${id} 克隆的全部条目。已拥有该学生的账号仍会保留一个指向无效 ID 的记录。` });
           if (!ok) return;
-          try { await api.modsRemove(id); toast('Deleted', 'warn'); go('characters'); }
+          try { await api.modsRemove(id); toast('已删除', 'warn'); go('characters'); }
           catch (e) { toast(e.message, 'bad'); }
         }});
 
         body.appendChild(el('div.row.wrap', { style: { gap: '10px', marginTop: '20px' } }, save, remove, el('div.spacer', {}),
-          d.assets.length ? frag(`<span class="tag grey">${d.assets.length} staged file${d.assets.length === 1 ? '' : 's'}</span>`) : null,
-          d.donorId ? frag(`<span class="tag">cloned from ${d.donorId}</span>`) : null));
-      }).catch((e) => { body.innerHTML = `<div class="empty"><b>Couldn't load</b><span>${escapeHtml(String(e.message || e))}</span></div>`; });
+          d.assets.length ? frag(`<span class="tag grey">${d.assets.length} 个暂存文件</span>`) : null,
+          d.donorId ? frag(`<span class="tag">克隆自 ${d.donorId}</span>`) : null));
+      }).catch((e) => { body.innerHTML = `<div class="empty"><b>加载失败</b><span>${escapeHtml(String(e.message || e))}</span></div>`; });
     }
   },
 };
